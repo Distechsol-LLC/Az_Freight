@@ -7,13 +7,17 @@ import { listShipments } from '@/lib/api/shipments';
 import type { Shipment } from '@/types';
 import StatusBadge from '@/components/status-badge';
 import Pagination from '@/components/pagination';
-import { TRANSPORT_LABELS, STATUS_LABELS } from '@/lib/constants';
+import { TRANSPORT_LABELS } from '@/lib/constants';
 import Loading from '@/components/loading';
+import { useTranslation } from '@/lib/i18n';
+import { useAuth } from '@/context/auth-context';
 
 const ALL_STATUSES = ['', 'request', 'confirmed', 'in_transit', 'customs', 'delivered', 'cancelled'];
 
 export default function ShipmentsPage() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -40,7 +44,7 @@ export default function ShipmentsPage() {
         <div className="flex items-center gap-4">
           <input
             type="text"
-            placeholder="Search shipments..."
+            placeholder={t('shipmentsList.searchPlaceholder')}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="input-field w-64"
@@ -50,15 +54,22 @@ export default function ShipmentsPage() {
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
             className="input-field w-44"
           >
-            <option value="">All Statuses</option>
+            <option value="">{t('shipmentsList.allStatuses')}</option>
             {ALL_STATUSES.filter(Boolean).map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>
+              <option key={s} value={s}>{t('statuses.' + s)}</option>
             ))}
           </select>
         </div>
-        <Link href="/shipments/new" className="btn-primary">
-          New Shipment
-        </Link>
+        <div className="flex items-center gap-2">
+          {user?.role === 'admin' && (
+            <Link href="/shipments/settings/statuses" className="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50">
+              {t('nav.statusSettings')}
+            </Link>
+          )}
+          <Link href="/shipments/new" className="btn-primary">
+            {t('shipmentsList.newShipment')}
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
@@ -70,13 +81,13 @@ export default function ShipmentsPage() {
               <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Ref #</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Carrier</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Transport</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Route</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('dashboard.refNumber')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('shipmentsList.client')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('shipmentsList.carrier')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('requestsList.transport')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('shipmentsList.route')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('shipmentsList.created')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
@@ -99,7 +110,7 @@ export default function ShipmentsPage() {
                   ))}
                   {shipments.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">No shipments found</td>
+                      <td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">{t('shipmentsList.noShipmentsFound')}</td>
                     </tr>
                   )}
                 </tbody>

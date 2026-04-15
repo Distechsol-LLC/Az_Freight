@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/auth-context';
-
-const inter = Inter({ subsets: ['latin'] });
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'AzFreight — Freight Management',
@@ -13,8 +11,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>{children}</AuthProvider>
+      <body style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
