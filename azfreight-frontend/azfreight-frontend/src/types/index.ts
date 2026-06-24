@@ -1,4 +1,4 @@
-export type UserRole = 'superadmin' | 'admin' | 'manager' | 'accountant' | 'client';
+export type UserRole = 'superadmin' | 'director' | 'admin' | 'hr' | 'manager' | 'logistics_agent' | 'dispatcher' | 'warehouse_manager' | 'accountant' | 'client';
 export type ShipmentStatus = 'request' | 'confirmed' | 'in_transit' | 'customs' | 'delivered' | 'cancelled';
 export type TransportType = 'road_tir' | 'sea' | 'air' | 'rail';
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'partially_paid' | 'overdue' | 'cancelled';
@@ -22,10 +22,15 @@ export interface User {
   role: UserRole;
   phone: string | null;
   tenantId: string;
+  tenant?: { name: string; slug: string } | null;
   isActive: boolean;
   lastLogin: string | null;
   createdAt: string;
   updatedAt: string;
+  preferredLocale?: string | null;
+  preferredTheme?: string | null;
+  preferredTimezone?: string | null;
+  preferredCurrency?: string | null;
 }
 
 export interface Client {
@@ -77,6 +82,13 @@ export interface CustomStatus {
   createdAt: string;
 }
 
+export interface UserPreferences {
+  preferredLocale: string | null;
+  preferredTheme: string | null;
+  preferredTimezone: string | null;
+  preferredCurrency: string | null;
+}
+
 export interface Shipment {
   id: string;
   referenceNumber: string;
@@ -97,8 +109,8 @@ export interface Shipment {
   destinationCity: string;
   destinationAddress: string | null;
   cargoDescription: string | null;
-  cargoWeight: number | null;
-  cargoVolume: number | null;
+  weightKg: number | null;
+  volumeCbm: number | null;
   packageCount: number | null;
   clientRate: number | null;
   carrierRate: number | null;

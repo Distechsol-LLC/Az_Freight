@@ -1,5 +1,6 @@
 export default () => ({
   port: parseInt(process.env.PORT || '3000', 10),
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
   jwt: {
     secret: process.env.JWT_SECRET || 'change-me',
     accessExpiration: process.env.JWT_ACCESS_EXPIRATION || '15m',
@@ -14,6 +15,6 @@ export default () => ({
     bucket: process.env.S3_BUCKET || 'azfreight',
     accessKeyId: process.env.S3_ACCESS_KEY || 'minioadmin',
     secretAccessKey: process.env.S3_SECRET_KEY || 'minioadmin',
-    forcePathStyle: true,
+    forcePathStyle: process.env.S3_USE_PATH_STYLE === 'true',
   },
 });

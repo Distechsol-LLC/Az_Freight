@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { listClients } from '@/lib/api/clients';
+import { listClients, removeClient } from '@/lib/api/clients';
 import type { Client } from '@/types';
 import Pagination from '@/components/pagination';
 import Loading from '@/components/loading';
 import { useTranslation } from '@/lib/i18n';
+import { exportToCSV } from '@/lib/export';
 
 export default function ClientsPage() {
   const router = useRouter();
@@ -31,6 +32,17 @@ export default function ClientsPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const handleDelete = async (e: React.MouseEvent, clientId: string, name: string) => {
+    e.stopPropagation();
+    if (!confirm(`Delete client "${name}"?`)) return;
+    try {
+      await removeClient(clientId);
+      fetchData();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to delete');
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -41,7 +53,10 @@ export default function ClientsPage() {
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="input-field w-64"
         />
-        <Link href="/clients/new" className="btn-primary">{t('clientsList.newClient')}</Link>
+        <div className="flex items-center gap-2">
+          <button onClick={() => exportToCSV(clients.map((c) => ({ companyName: c.companyName, email: c.email || '', phone: c.phone || '', country: c.country || '', city: c.city || '', status: c.isActive ? 'Active' : 'Inactive' })), 'clients')} className="btn-secondary text-sm">CSV</button>
+          <Link href="/clients/new" className="btn-primary">{t('clientsList.newClient')}</Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
@@ -57,6 +72,7 @@ export default function ClientsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.phone')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.email')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
@@ -76,10 +92,18 @@ export default function ClientsPage() {
                           {c.isActive ? t('clientsList.active') : t('clientsList.inactive')}
                         </span>
                       </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={(e) => handleDelete(e, c.id, c.companyName)}
+                          className="text-red-500 hover:text-red-700 text-xs font-medium"
+                        >
+                          {t('common.delete')}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {clients.length === 0 && (
-                    <tr><td colSpan={6} className="px-6 py-8 text-center text-sm text-slate-500">{t('clientsList.noClientsFound')}</td></tr>
+                    <tr><td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">{t('clientsList.noClientsFound')}</td></tr>
                   )}
                 </tbody>
               </table>

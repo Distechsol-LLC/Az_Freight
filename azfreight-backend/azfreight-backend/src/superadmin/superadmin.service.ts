@@ -41,7 +41,7 @@ export class SuperAdminService {
           email: dto.adminEmail,
           passwordHash,
           name: dto.adminName,
-          role: 'admin',
+          role: 'director',
         },
       });
 
@@ -98,6 +98,37 @@ export class SuperAdminService {
     });
   }
 
+  // Полное удаление тенанта и всех связанных данных
+  async deleteTenant(id: string) {
+    const tenant = await this.prisma.tenant.findUnique({ where: { id } });
+    if (!tenant) {
+      throw new NotFoundException('Тенант не найден');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.auditLog.deleteMany({ where: { tenantId: id } });
+      await tx.notification.deleteMany({ where: { tenantId: id } });
+      await tx.clientPortalSession.deleteMany({ where: { tenantId: id } });
+      await tx.invitation.deleteMany({ where: { tenantId: id } });
+      await tx.quoteLine.deleteMany({ where: { quote: { tenantId: id } } });
+      await tx.quote.deleteMany({ where: { tenantId: id } });
+      await tx.expense.deleteMany({ where: { shipment: { tenantId: id } } });
+      await tx.document.deleteMany({ where: { tenantId: id } });
+      await tx.invoice.deleteMany({ where: { tenantId: id } });
+      await tx.customStatus.deleteMany({ where: { tenantId: id } });
+      await tx.shipment.deleteMany({ where: { tenantId: id } });
+      await tx.shipmentRequest.deleteMany({ where: { tenantId: id } });
+      await tx.vehicle.deleteMany({ where: { tenantId: id } });
+      await tx.carrier.deleteMany({ where: { tenantId: id } });
+      await tx.client.deleteMany({ where: { tenantId: id } });
+      await tx.lead.deleteMany({ where: { tenantId: id } });
+      await tx.user.deleteMany({ where: { tenantId: id } });
+      await tx.tenant.delete({ where: { id } });
+    });
+
+    return { deleted: true, name: tenant.name };
+  }
+
   // Получение списка пользователей конкретного тенанта
   async getTenantUsers(tenantId: string) {
     const tenant = await this.prisma.tenant.findUnique({ where: { id: tenantId } });
@@ -117,6 +148,25 @@ export class SuperAdminService {
         isActive: true,
         lastLogin: true,
         createdAt: true,
+      },
+    });
+  }
+
+  // Все пользователи платформы, сгруппированные по тенанту
+  async getAllUsers() {
+    return this.prisma.user.findMany({
+      orderBy: [{ tenant: { name: 'asc' } }, { createdAt: 'desc' }],
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        tenantId: true,
+        tenant: { select: { id: true, name: true, slug: true } },
       },
     });
   }

@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { getStats, type PlatformStats } from '@/lib/api/superadmin';
+import { useTranslation } from '@/lib/i18n';
 
 export default function SuperAdminDashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,7 +19,7 @@ export default function SuperAdminDashboardPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-gray-500">Загрузка статистики...</div>;
+    return <div className="text-slate-500">{t('superadmin.loadingStats')}</div>;
   }
 
   if (error) {
@@ -32,31 +34,31 @@ export default function SuperAdminDashboardPage() {
 
   // Карточки статистики
   const cards = [
-    { label: 'Всего тенантов', value: stats.totalTenants, color: 'bg-blue-500' },
-    { label: 'Активных тенантов', value: stats.activeTenants, color: 'bg-green-500' },
-    { label: 'Всего пользователей', value: stats.totalUsers, color: 'bg-purple-500' },
-    { label: 'Всего заявок', value: stats.totalRequests, color: 'bg-orange-500' },
-    { label: 'Всего перевозок', value: stats.totalShipments, color: 'bg-teal-500' },
+    { label: t('superadmin.totalTenants'), value: stats.totalTenants, color: 'bg-blue-500' },
+    { label: t('superadmin.activeTenants'), value: stats.activeTenants, color: 'bg-green-500' },
+    { label: t('superadmin.totalUsers'), value: stats.totalUsers, color: 'bg-purple-500' },
+    { label: t('superadmin.totalRequests'), value: stats.totalRequests, color: 'bg-orange-500' },
+    { label: t('superadmin.totalShipments'), value: stats.totalShipments, color: 'bg-teal-500' },
   ];
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">{t('superadmin.dashboard')}</h1>
 
       {/* Сетка карточек статистики */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {cards.map((card) => (
           <div
             key={card.label}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            className="bg-white rounded-xl shadow-sm border border-slate-200 p-6"
           >
             <div className={`w-10 h-10 ${card.color} rounded-lg flex items-center justify-center mb-3`}>
               <span className="text-white text-lg font-bold">
                 {card.value}
               </span>
             </div>
-            <p className="text-2xl font-bold text-gray-800">{card.value}</p>
-            <p className="text-sm text-gray-500 mt-1">{card.label}</p>
+            <p className="text-2xl font-bold text-slate-800">{card.value}</p>
+            <p className="text-sm text-slate-500 mt-1">{card.label}</p>
           </div>
         ))}
       </div>

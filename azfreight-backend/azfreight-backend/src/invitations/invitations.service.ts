@@ -3,19 +3,28 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { RegisterByInviteDto } from './dto/register-by-invite.dto';
+import { canManageRole } from '../common/constants/role-hierarchy';
 
 @Injectable()
 export class InvitationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mail: MailService,
+  ) {}
 
-  async create(tenantId: string, invitedById: string, dto: CreateInvitationDto) {
+  async create(tenantId: string, invitedById: string, dto: CreateInvitationDto, inviterRole?: string) {
     if (dto.role === 'superadmin') {
       throw new BadRequestException('Superadmin role cannot be granted via invitations');
+    }
+    if (inviterRole && !canManageRole(inviterRole, dto.role)) {
+      throw new ForbiddenException('You cannot invite a user with a role equal to or above your own');
     }
 
     const tenant = await this.prisma.tenant.findUnique({ where: { id: tenantId } });
@@ -35,6 +44,8 @@ export class InvitationsService {
     });
 
     const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/portal/${tenant.slug}/register?invite=${invitation.token}`;
+
+    this.mail.sendInvitation(dto.email, inviteUrl, tenant.name).catch(() => {});
 
     return { ...invitation, inviteUrl };
   }

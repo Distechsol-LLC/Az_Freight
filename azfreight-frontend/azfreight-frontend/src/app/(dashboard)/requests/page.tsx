@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { listShipmentRequests, type ShipmentRequestSummary } from '@/lib/api/shipment-requests';
 import { CARGO_TYPE_LABELS } from '@/lib/cargo-requirements';
 import Pagination from '@/components/pagination';
@@ -17,6 +18,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUSES = ['', 'new', 'reviewing', 'quoted', 'rejected', 'converted'];
+
+const REQ_STATUS_COLORS: Record<string, string> = {
+  OPEN: 'bg-blue-100 text-blue-700',
+  QUOTATION: 'bg-amber-100 text-amber-700',
+  REPLIED: 'bg-purple-100 text-purple-700',
+  CONVERTED: 'bg-emerald-100 text-emerald-700',
+  CLOSED: 'bg-slate-100 text-slate-600',
+};
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -45,6 +54,9 @@ export default function RequestsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t('requestsList.title')}</h1>
+        <Link href="/requests/new" className="btn-primary">
+          + {t('manualRequest.title')}
+        </Link>
       </div>
       <div className="flex items-center gap-4 mb-4">
         <input
@@ -80,6 +92,7 @@ export default function RequestsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('requestsList.cargo')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('requestsList.transport')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Pipeline</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('common.date')}</th>
                   </tr>
                 </thead>
@@ -104,11 +117,18 @@ export default function RequestsPage() {
                           {t('statuses.' + r.status)}
                         </span>
                       </td>
+                      <td className="px-6 py-4">
+                        {(r as any).requestStatus && (
+                          <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${REQ_STATUS_COLORS[(r as any).requestStatus] || 'bg-slate-100 text-slate-600'}`}>
+                            {t('requestStatus.' + (r as any).requestStatus)}
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-sm text-slate-500">{new Date(r.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                   {data.length === 0 && (
-                    <tr><td colSpan={7} className="px-6 py-8 text-center text-sm text-slate-500">{t('requestsList.noRequestsFound')}</td></tr>
+                    <tr><td colSpan={8} className="px-6 py-8 text-center text-sm text-slate-500">{t('requestsList.noRequestsFound')}</td></tr>
                   )}
                 </tbody>
               </table>

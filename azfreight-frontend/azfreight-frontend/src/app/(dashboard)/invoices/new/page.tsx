@@ -6,9 +6,11 @@ import { createInvoice } from '@/lib/api/invoices';
 import { listClients } from '@/lib/api/clients';
 import { listShipments } from '@/lib/api/shipments';
 import type { Client, Shipment } from '@/types';
+import { useTranslation } from '@/lib/i18n';
 
 export default function NewInvoicePage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [clients, setClients] = useState<Client[]>([]);
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -43,7 +45,7 @@ export default function NewInvoicePage() {
     e.preventDefault();
     setError('');
     if (!form.invoiceNumber || !form.clientId || !form.amount || !form.issuedDate || !form.dueDate) {
-      setError('Please fill in all required fields');
+      setError(t('newInvoice.fillRequired'));
       return;
     }
     setSubmitting(true);
@@ -60,14 +62,14 @@ export default function NewInvoicePage() {
       });
       router.push('/invoices');
     } catch {
-      setError('Failed to create invoice');
+      setError(t('newInvoice.failedToCreate'));
     }
     setSubmitting(false);
   }
 
   return (
     <div className="max-w-3xl">
-      <h2 className="text-xl font-bold text-slate-900 mb-6">New Invoice</h2>
+      <h2 className="text-xl font-bold text-slate-900 mb-6">{t('newInvoice.title')}</h2>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
@@ -76,29 +78,29 @@ export default function NewInvoicePage() {
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="label-field">Invoice Number *</label>
+            <label className="label-field">{t('newInvoice.invoiceNumberRequired')}</label>
             <input type="text" value={form.invoiceNumber} onChange={(e) => update('invoiceNumber', e.target.value)} className="input-field" required />
           </div>
           <div>
-            <label className="label-field">Client *</label>
+            <label className="label-field">{t('newInvoice.clientRequired')}</label>
             <select value={form.clientId} onChange={(e) => update('clientId', e.target.value)} className="input-field" required>
-              <option value="">Select client...</option>
+              <option value="">{t('newInvoice.selectClient')}</option>
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>{c.companyName}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="label-field">Shipment (optional)</label>
+            <label className="label-field">{t('newInvoice.shipmentOptional')}</label>
             <select value={form.shipmentId} onChange={(e) => update('shipmentId', e.target.value)} className="input-field">
-              <option value="">None</option>
+              <option value="">{t('newInvoice.none')}</option>
               {shipments.map((s) => (
                 <option key={s.id} value={s.id}>{s.referenceNumber}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="label-field">Currency</label>
+            <label className="label-field">{t('newInvoice.currency')}</label>
             <select value={form.currency} onChange={(e) => update('currency', e.target.value)} className="input-field">
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -108,28 +110,28 @@ export default function NewInvoicePage() {
             </select>
           </div>
           <div>
-            <label className="label-field">Amount *</label>
+            <label className="label-field">{t('newInvoice.amountRequired')}</label>
             <input type="number" step="0.01" value={form.amount} onChange={(e) => update('amount', e.target.value)} className="input-field" required />
           </div>
           <div>
-            <label className="label-field">Issued Date *</label>
+            <label className="label-field">{t('newInvoice.issuedDateRequired')}</label>
             <input type="date" value={form.issuedDate} onChange={(e) => update('issuedDate', e.target.value)} className="input-field" required />
           </div>
           <div>
-            <label className="label-field">Due Date *</label>
+            <label className="label-field">{t('newInvoice.dueDateRequired')}</label>
             <input type="date" value={form.dueDate} onChange={(e) => update('dueDate', e.target.value)} className="input-field" required />
           </div>
         </div>
 
         <div>
-          <label className="label-field">Notes</label>
+          <label className="label-field">{t('common.notes')}</label>
           <textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} className="input-field" rows={3} />
         </div>
 
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => router.push('/invoices')} className="btn-secondary">Cancel</button>
+          <button type="button" onClick={() => router.push('/invoices')} className="btn-secondary">{t('common.cancel')}</button>
           <button type="submit" disabled={submitting} className="btn-primary disabled:opacity-50">
-            {submitting ? 'Creating...' : 'Create Invoice'}
+            {submitting ? t('newInvoice.creating') : t('newInvoice.createInvoice')}
           </button>
         </div>
       </form>

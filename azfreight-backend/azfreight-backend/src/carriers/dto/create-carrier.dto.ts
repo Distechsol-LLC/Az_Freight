@@ -1,35 +1,41 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsEmail } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsEmail, IsBoolean, IsNumber, IsDateString, IsEnum } from 'class-validator';
 
 export class CreateCarrierDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsString() @IsNotEmpty()
   companyName: string;
 
-  @IsArray()
-  @IsString({ each: true })
+  @IsArray() @IsString({ each: true })
   transportTypes: string[];
 
-  @IsOptional()
-  @IsString()
-  taxId?: string;
+  @IsOptional() @IsString() taxId?: string;
+  @IsOptional() @IsString() country?: string;
+  @IsOptional() @IsString() city?: string;
+  @IsOptional() @IsString() phone?: string;
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() notes?: string;
 
-  @IsOptional()
-  @IsString()
-  country?: string;
+  @IsOptional() @IsEnum(['CONTAINERS', 'BREAKBULK', 'BOTH'])
+  seaFreightType?: string;
 
-  @IsOptional()
-  @IsString()
-  city?: string;
+  @IsOptional() @IsBoolean() hasWarehouse?: boolean;
+  @IsOptional() @IsBoolean() customClearance?: boolean;
+  @IsOptional() @IsString() taxResidenceDTA?: string;
+  @IsOptional() @IsString() complianceCert?: string;
+  @IsOptional() @IsString() contractNumber?: string;
+  @IsOptional() @IsDateString() contractStart?: string;
+  @IsOptional() @IsDateString() contractEnd?: string;
+  @IsOptional() @IsString() contractDetails?: string;
+  @IsOptional() @IsString() contactPerson?: string;
+  @IsOptional() @IsEmail() contactEmail?: string;
+  @IsOptional() @IsNumber() creditTermDays?: number;
 
-  @IsOptional()
-  @IsString()
-  phone?: string;
+  @IsOptional() @IsEnum(['IN_PROGRESS', 'APPROVED', 'REJECTED'])
+  assessmentStatus?: string;
 
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-
-  @IsOptional()
-  @IsString()
-  notes?: string;
+  @IsOptional() @IsString() rejectedReason?: string;
+  @IsOptional() @IsDateString() assessmentDate?: string;
+  @IsOptional() @IsBoolean() isBlacklisted?: boolean;
+  @IsOptional() @IsString() blacklistReason?: string;
+  @IsOptional() @IsString() ogLicense?: string;
+  @IsOptional() @IsNumber() insuranceLimit?: number;
 }

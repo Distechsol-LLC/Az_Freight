@@ -65,9 +65,24 @@ export function deactivateTenant(id: string) {
   return del<void>(`/superadmin/tenants/${id}`);
 }
 
+// Полностью удалить тенанта и все данные
+export function deleteTenantPermanently(id: string) {
+  return del<{ deleted: boolean; name: string }>(`/superadmin/tenants/${id}/permanent`);
+}
+
 // Получить пользователей тенанта
 export function getTenantUsers(id: string) {
   return get<TenantUser[]>(`/superadmin/tenants/${id}/users`);
+}
+
+// Все пользователи с привязкой к тенанту
+export interface PlatformUser extends TenantUser {
+  tenantId: string;
+  tenant: { id: string; name: string; slug: string };
+}
+
+export function getAllUsers() {
+  return get<PlatformUser[]>('/superadmin/users');
 }
 
 // Пригласить пользователя в тенант

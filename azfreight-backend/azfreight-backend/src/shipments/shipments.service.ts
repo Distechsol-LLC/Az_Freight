@@ -67,6 +67,21 @@ export class ShipmentsService {
     return shipment;
   }
 
+  async findOneForDocument(tenantId: string, id: string) {
+    const shipment = await this.prisma.shipment.findFirst({
+      where: { id, tenantId },
+      include: {
+        client: { select: { id: true, companyName: true, taxId: true, address: true, city: true, country: true, phone: true, email: true } },
+        carrier: { select: { id: true, companyName: true, taxId: true, country: true, phone: true, email: true } },
+        tenant: { select: { name: true } },
+      },
+    });
+    if (!shipment) {
+      throw new NotFoundException('Shipment not found');
+    }
+    return shipment;
+  }
+
   async create(tenantId: string, userId: string, dto: CreateShipmentDto) {
     const referenceNumber = await this.generateReferenceNumber(tenantId);
 
@@ -138,9 +153,13 @@ export class ShipmentsService {
       data.profit = clientRate - carrierRate;
     }
 
-    return this.prisma.shipment.update({
-      where: { id },
+    const result = await this.prisma.shipment.updateMany({
+      where: { id, tenantId },
       data,
+    });
+    if (result.count === 0) throw new NotFoundException('Shipment not found');
+    return this.prisma.shipment.findUnique({
+      where: { id },
       include: {
         client: { select: { id: true, companyName: true } },
         carrier: { select: { id: true, companyName: true } },

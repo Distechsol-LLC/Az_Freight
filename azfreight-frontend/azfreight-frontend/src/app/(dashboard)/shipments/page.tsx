@@ -11,6 +11,7 @@ import { TRANSPORT_LABELS } from '@/lib/constants';
 import Loading from '@/components/loading';
 import { useTranslation } from '@/lib/i18n';
 import { useAuth } from '@/context/auth-context';
+import { exportToCSV } from '@/lib/export';
 
 const ALL_STATUSES = ['', 'request', 'confirmed', 'in_transit', 'customs', 'delivered', 'cancelled'];
 
@@ -24,6 +25,10 @@ export default function ShipmentsPage() {
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [transportFilter, setTransportFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const limit = 20;
 
   const fetchData = useCallback(async () => {
@@ -59,18 +64,55 @@ export default function ShipmentsPage() {
               <option key={s} value={s}>{t('statuses.' + s)}</option>
             ))}
           </select>
+          <button onClick={() => setShowFilters(!showFilters)} className="px-3 py-2 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">
+            {showFilters ? '✕' : '⚙'} {t('common.search')}
+          </button>
         </div>
         <div className="flex items-center gap-2">
-          {user?.role === 'admin' && (
+          {(user?.role === 'admin' || user?.role === 'superadmin') && (
             <Link href="/shipments/settings/statuses" className="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50">
               {t('nav.statusSettings')}
             </Link>
           )}
+          <button
+            onClick={() => exportToCSV(shipments.map((s) => ({
+              referenceNumber: s.referenceNumber, client: s.client?.companyName || '', carrier: s.carrier?.companyName || '',
+              transport: s.transportType, origin: `${s.originCity}, ${s.originCountry}`, destination: `${s.destinationCity}, ${s.destinationCountry}`,
+              status: s.status, created: new Date(s.createdAt).toLocaleDateString(),
+            })), 'shipments')}
+            className="px-3 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            CSV
+          </button>
           <Link href="/shipments/new" className="btn-primary">
             {t('shipmentsList.newShipment')}
           </Link>
         </div>
       </div>
+
+      {showFilters && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="label-field">{t('requestForm.transportType')}</label>
+              <select value={transportFilter} onChange={(e) => { setTransportFilter(e.target.value); setPage(1); }} className="input-field">
+                <option value="">All</option>
+                {['road_tir', 'sea', 'air', 'rail'].map((tp) => (
+                  <option key={tp} value={tp}>{t('transport.' + tp)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label-field">{t('common.date')} (from)</label>
+              <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} className="input-field" />
+            </div>
+            <div>
+              <label className="label-field">{t('common.date')} (to)</label>
+              <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} className="input-field" />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
         {loading ? (
